@@ -1,0 +1,15 @@
+﻿syntax = "proto3";
+
+import "head.proto";
+
+message RequestComplexSearch
+{
+	head head = 1;
+	string content = 2;
+	int32 type = 3;
+	int32 order = 4;
+	int32 index = 5;
+	int32 count = 6;
+	string performanceId = 7;
+	bool isRequestHeader = 8;
+}

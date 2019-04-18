@@ -114,6 +114,9 @@ namespace ProtobufGenerator
                 if (type != null)
                 {
                     string srcFile = pi.FileNames[0];
+                    string tmpFile = Path.GetTempPath() + pi.GetHashCode() + ".proto";
+                    File.Copy(srcFile, tmpFile, true);
+
                     string path = Path.GetTempPath() + pi.GetHashCode();
                     if (Directory.Exists(path))
                         Directory.Delete(path, true);
@@ -127,25 +130,39 @@ namespace ProtobufGenerator
                         if (p?.WaitForExit(10 * 1000) == true)
                         {
                             string[] dstFiles = Directory.GetFiles(path);
-                            if (dstFiles.Length > 0)
+                            if (dstFiles.Length != 0)
                             {
-                                string dstFile;
+                                string srcDir = Path.GetDirectoryName(srcFile);
+                                string srcName = Path.GetFileNameWithoutExtension(srcFile);
+                                int count = 0;
                                 switch (type)
                                 {
                                     case "csharp_out":
-                                        dstFile = srcFile.Substring(0, srcFile.Length - 5) + "cs";
-                                        File.Copy(dstFiles[0], dstFile, true);
-                                        pi.ProjectItems.AddFromFile(dstFile);
+                                        count = 1;
                                         break;
                                     case "cpp_out":
+                                        srcDir = Path.Combine(srcDir, "generate");
+                                        srcName += ".pb";
+                                        count = 2;
                                         break;
-                                    default:
-                                        break;
+                                }
+                                if (dstFiles.Length == count)
+                                {
+                                    if (Directory.Exists(srcDir) == false)
+                                        Directory.CreateDirectory(srcDir);
+                                    for (int i = 0; i < count; i++)
+                                    {
+                                        string dstExt = Path.GetExtension(dstFiles[i]);
+                                        string dstFile = Path.Combine(srcDir, srcName + dstExt);
+                                        File.Copy(dstFiles[i], dstFile, true);
+                                        pi.ProjectItems.AddFromFile(dstFile);
+                                    }
                                 }
                             }
                         }
                     }
                     Directory.Delete(path, true);
+                    File.Delete(tmpFile);
                 }
             }
         }
