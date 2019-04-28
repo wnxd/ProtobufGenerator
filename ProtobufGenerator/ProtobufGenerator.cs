@@ -1,6 +1,7 @@
 ﻿using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
@@ -116,7 +117,7 @@ namespace ProtobufGenerator
                     string srcFile = pi.FileNames[0];
                     string tmpFile = Path.GetTempPath() + pi.GetHashCode() + ".proto";
                     File.Copy(srcFile, tmpFile, true);
-
+                    this.ClearItems(pi);
                     string path = Path.GetTempPath() + pi.GetHashCode();
                     if (Directory.Exists(path))
                         Directory.Delete(path, true);
@@ -165,6 +166,17 @@ namespace ProtobufGenerator
                     File.Delete(tmpFile);
                 }
             }
+        }
+
+        private void ClearItems(ProjectItem item)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            IList<ProjectItem> list = new List<ProjectItem>();
+            foreach (ProjectItem pi in item.ProjectItems)
+                list.Add(pi);
+            foreach (ProjectItem pi in list)
+                pi.Remove();
         }
     }
 }
